@@ -5,13 +5,13 @@ module.exports = assert
 var syns = {}
   , id = 1
 
-function assert (ok, message, extra) {
+function assert (ok, message, extra, caller) {
   //console.error("assert %j", [ok, message, extra])
   //if (extra && extra.skip) return assert.skip(message, extra)
   //console.error("assert", [ok, message, extra])
   var res = { id : id ++, ok: ok }
 
-  var caller = getCaller(extra && extra.error)
+  caller = caller || getCaller(extra && extra.error)
   if (extra && extra.error) {
     res.type = extra.error.name
     res.message = extra.error.message
@@ -329,7 +329,12 @@ function diff (f, w, p) {
        + "^ (at position = "+p+")"
 }
 
-function getCaller (er) {
+function callFrom (__dirname, __filename, fn, args) {
+  
+
+
+function getCaller (er, __dirname, __filename) {
+  console.error(typeof self, self.constructor.name, self.__filename, self.__dirname)
   // get the first file/line that isn't this file.
   if (!er) er = new Error
   var stack = er.stack
@@ -340,11 +345,11 @@ function getCaller (er) {
     var file = s[1]
       , line = +s[2]
       , col = +s[3]
-    if (file.indexOf(__dirname) === 0) continue
+    if (file.indexOf(self && self.__dirname || __dirname) === 0) continue
     else break
   }
   var res = {}
-  if (file && file !== __filename) {
+  if (file && file !== (self && self.__filename || __filename)) {
     res.file = file
     res.line = line
     res.column = col
